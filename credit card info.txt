@@ -1,0 +1,25 @@
+At Joiya Shopping Store, we are committed to maintaining the highest level of security and transparency regarding credit card transactions. This policy outlines the guidelines, procedures, and security measures in place to protect our customers' credit card information.
+
+1. Accepted Credit Cards:
+We accept major credit cards including Visa, MasterCard, and American Express. All credit card payments must be authorized by the cardholder.
+
+2. Payment Authorization:
+All credit card transactions require authorization from the issuing bank. If a card is declined, the customer will be notified and asked to provide an alternate payment method.
+
+3. Secure Transactions:
+All credit card transactions are processed through a secure, PCI DSS-compliant payment gateway using SSL encryption. We do not store credit card information on our servers.
+
+4. Fraud Prevention:
+To prevent fraudulent activity, we may request additional verification, such as billing address confirmation or photo ID. Suspicious orders will be reviewed and may be canceled.
+
+5. Refunds to Credit Cards:
+Refunds for returned or canceled orders will be issued to the original credit card used during the purchase. Please allow 5-10 business days for the refund to reflect on your statement.
+
+6. Cardholder Data Protection:
+We are committed to ensuring that cardholder data is protected against unauthorized access, use, or disclosure. All staff handling credit card data are trained in security protocols.
+
+7. Dispute Resolution:
+If a customer believes their credit card was used fraudulently or has a dispute regarding a transaction, they should contact our customer service immediately. We will work with the bank and customer to resolve the issue promptly.
+
+This credit card policy may be updated periodically to reflect changes in security standards and regulatory requirements. Customers are encouraged to review this policy regularly.
+"""

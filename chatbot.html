@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot Widget</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+    }
+
+    #chatbot-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #007bff;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: background-color 0.3s ease;
+      z-index: 9999;
+    }
+
+    #chatbot-button:hover {
+      background-color: #0056b3;
+    }
+
+    .chat-container {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 350px;
+      background: white;
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 9999;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 15px 15px 0 0;
+    }
+
+    .chat-header h2 {
+      margin: 0;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      color: #333;
+    }
+
+    .chat-body {
+      background: white;
+      padding: 15px;
+      height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .message.bot {
+      justify-content: flex-start;
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .bubble {
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 15px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .bot .bubble {
+      background: #f2f2f2;
+      color: #000;
+      border-radius: 15px 15px 15px 0;
+    }
+
+    .user .bubble {
+      background: #6622cc;
+      color: #fff;
+      border-radius: 15px 15px 0 15px;
+    }
+
+    .chat-footer {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 0 0 15px 15px;
+      padding: 10px 15px;
+      position: relative;
+    }
+
+    .chat-footer input {
+      flex: 1;
+      border: none;
+      padding: 10px 20px 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+      background: #eee;
+    }
+
+    .chat-footer .send-btn {
+      position: absolute;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      right: 20px;
+      color: #007bff;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin: 0 5px;
+    }
+
+    .message.user .avatar {
+      order: 1;
+      margin-left: 10px;
+    }
+
+    .message.bot .avatar {
+      order: -1;
+      margin-right: 10px;
+    }
+
+    .typing {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .typing .dot {
+      height: 8px;
+      width: 8px;
+      background-color: #999;
+      border-radius: 50%;
+      margin: 0 3px;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing .dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing .dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0);
+      }
+      40% {
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="chatbot-button">Chat with us</div>
+
+<div class="chat-container" id="chat-container">
+  <div class="chat-header">
+    <h2>Chatbot</h2>
+    <span id="close-chat" style="cursor:pointer;">✕</span>
+  </div>
+  <div class="chat-body" id="chat-body"></div>
+  <div class="chat-footer">
+    <input type="text" id="chat-input" placeholder="Type here..." />
+    <button class="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+  const chatbotButton = document.getElementById('chatbot-button');
+  const chatContainer = document.getElementById('chat-container');
+  const chatInput = document.getElementById('chat-input');
+  const chatBody = document.getElementById('chat-body');
+  const closeChat = document.getElementById('close-chat');
+
+  chatbotButton.addEventListener('click', () => {
+    chatContainer.style.display = chatContainer.style.display === 'flex' ? 'none' : 'flex';
+    chatContainer.style.flexDirection = 'column';
+    if (chatBody.children.length === 0) {
+      setTimeout(() => addBotMessage("Welcome! How can I help you?"), 200);
+    }
+  });
+
+  closeChat.addEventListener('click', () => {
+    chatContainer.style.display = 'none';
+  });
+
+  chatInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      sendMessage();
+    }
+  });
+
+  function sendMessage() {
+    const message = chatInput.value.trim();
+
+    if (message) {
+      addUserMessage(message);
+      chatInput.value = '';
+      showTypingIndicator();
+
+      fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+      })
+      .then(res => res.json())
+      .then(data => {
+        removeTypingIndicator();
+        addBotMessage(data.answer || '...');
+      })
+      .catch(() => {
+        removeTypingIndicator();
+        addBotMessage("⚠️ Server error. Try again later.");
+      });
+    }
+  }
+
+  function addUserMessage(text) {
+    const div = document.createElement('div');
+    div.className = 'message user';
+    div.innerHTML = `
+      <div class="bubble">${text}</div>
+      <img class="avatar" src="https://i.pravatar.cc/30?img=3" alt="User">
+    `;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  function addBotMessage(text) {
+    const div = document.createElement('div');
+    div.className = 'message bot';
+    div.innerHTML = `
+      <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/219/219983.png" alt="Bot">
+      <div class="bubble">${text}</div>
+    `;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  function showTypingIndicator() {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message bot typing-indicator';
+    typingDiv.id = 'typing-indicator';
+    typingDiv.innerHTML = `
+      <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/219/219983.png" alt="Bot">
+      <div class="bubble typing">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    `;
+    chatBody.appendChild(typingDiv);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  function removeTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) typingIndicator.remove();
+  }
+</script>
+
+</body>
+</html>
